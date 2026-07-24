@@ -7,6 +7,7 @@ import (
 	"github.com/metacubex/mihomo/common/atomic"
 	"github.com/metacubex/mihomo/common/xsync"
 	"github.com/metacubex/mihomo/component/memory"
+	C "github.com/metacubex/mihomo/constant"
 )
 
 var DefaultManager *Manager
@@ -70,8 +71,8 @@ func (m *Manager) Range(f func(c Tracker) bool) {
 	})
 }
 
-func (m *Manager) PushUploaded(lastChain string, size int64) {
-	if lastChain != "DIRECT" {
+func (m *Manager) PushUploaded(outboundType C.AdapterType, size int64) {
+	if outboundType != C.Direct && outboundType != C.Compatible {
 		m.proxyUploadTemp.Add(size)
 		m.proxyUploadTotal.Add(size)
 	}
@@ -79,8 +80,8 @@ func (m *Manager) PushUploaded(lastChain string, size int64) {
 	m.uploadTotal.Add(size)
 }
 
-func (m *Manager) PushDownloaded(lastChain string, size int64) {
-	if lastChain != "DIRECT" {
+func (m *Manager) PushDownloaded(outboundType C.AdapterType, size int64) {
+	if outboundType != C.Direct && outboundType != C.Compatible {
 		m.proxyDownloadTemp.Add(size)
 		m.proxyDownloadTotal.Add(size)
 	}

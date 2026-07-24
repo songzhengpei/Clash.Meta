@@ -227,6 +227,7 @@ type conn struct {
 	chain       C.Chain
 	pdChain     C.Chain
 	adapterAddr string
+	adapterType C.AdapterType
 }
 
 func (c *conn) RemoteDestination() string {
@@ -250,6 +251,10 @@ func (c *conn) Chains() C.Chain {
 // ProviderChains implements C.Connection
 func (c *conn) ProviderChains() C.Chain {
 	return c.pdChain
+}
+
+func (c *conn) OutboundType() C.AdapterType {
+	return c.adapterType
 }
 
 // AppendToChains implements C.Connection
@@ -278,7 +283,11 @@ func NewConn(c net.Conn, a C.ProxyAdapter) C.Conn {
 	if _, ok := c.(syscall.Conn); !ok { // exclusion system conn like *net.TCPConn
 		c = N.NewDeadlineConn(c) // most conn from outbound can't handle readDeadline correctly
 	}
-	cc := &conn{N.NewExtendedConn(c), nil, nil, a.Addr()}
+	cc := &conn{
+		ExtendedConn: N.NewExtendedConn(c),
+		adapterAddr:  a.Addr(),
+		adapterType:  a.Type(),
+	}
 	cc.AppendToChains(a)
 	return cc
 }
@@ -288,6 +297,7 @@ type packetConn struct {
 	chain       C.Chain
 	pdChain     C.Chain
 	adapterName string
+	adapterType C.AdapterType
 	connID      string
 	adapterAddr string
 	resolveUDP  func(ctx context.Context, metadata *C.Metadata) error
@@ -310,6 +320,10 @@ func (c *packetConn) Chains() C.Chain {
 // ProviderChains implements C.Connection
 func (c *packetConn) ProviderChains() C.Chain {
 	return c.pdChain
+}
+
+func (c *packetConn) OutboundType() C.AdapterType {
+	return c.adapterType
 }
 
 // AppendToChains implements C.Connection
@@ -344,7 +358,14 @@ func NewPacketConn(pc net.PacketConn, a ProxyAdapter) C.PacketConn {
 	if _, ok := pc.(syscall.Conn); !ok { // exclusion system conn like *net.UDPConn
 		epc = N.NewDeadlineEnhancePacketConn(epc) // most conn from outbound can't handle readDeadline correctly
 	}
-	cpc := &packetConn{epc, nil, nil, a.Name(), utils.NewUUIDV4().String(), a.Addr(), a.ResolveUDP}
+	cpc := &packetConn{
+		EnhancePacketConn: epc,
+		adapterName:       a.Name(),
+		adapterType:       a.Type(),
+		connID:            utils.NewUUIDV4().String(),
+		adapterAddr:       a.Addr(),
+		resolveUDP:        a.ResolveUDP,
+	}
 	cpc.AppendToChains(a)
 	return cpc
 }

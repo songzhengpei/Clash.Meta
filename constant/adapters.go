@@ -68,6 +68,7 @@ var ErrNotSupport = errors.New("no support")
 type Connection interface {
 	Chains() Chain
 	ProviderChains() Chain
+	OutboundType() AdapterType
 	AppendToChains(adapter ProxyAdapter)
 	RemoteDestination() string
 }

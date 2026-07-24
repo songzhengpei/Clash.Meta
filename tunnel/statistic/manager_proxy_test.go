@@ -1,14 +1,18 @@
 package statistic
 
-import "testing"
+import (
+	"testing"
+
+	C "github.com/metacubex/mihomo/constant"
+)
 
 func TestManagerSeparatesDirectAndProxyTraffic(t *testing.T) {
 	m := &Manager{}
 
-	m.PushUploaded("DIRECT", 10)
-	m.PushDownloaded("DIRECT", 20)
-	m.PushUploaded("proxy-node", 30)
-	m.PushDownloaded("proxy-node", 40)
+	m.PushUploaded(C.Direct, 10)
+	m.PushDownloaded(C.Direct, 20)
+	m.PushUploaded(C.Shadowsocks, 30)
+	m.PushDownloaded(C.Shadowsocks, 40)
 
 	if up, down := m.Total(); up != 40 || down != 60 {
 		t.Fatalf("Total() = (%d, %d), want (40, 60)", up, down)
@@ -20,8 +24,8 @@ func TestManagerSeparatesDirectAndProxyTraffic(t *testing.T) {
 
 func TestManagerResetClearsProxyTraffic(t *testing.T) {
 	m := &Manager{}
-	m.PushUploaded("proxy-node", 30)
-	m.PushDownloaded("proxy-node", 40)
+	m.PushUploaded(C.Shadowsocks, 30)
+	m.PushDownloaded(C.Shadowsocks, 40)
 
 	m.ResetStatistic()
 
